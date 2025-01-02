@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Космические Бои</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: black;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            border: 1px solid white;
+        }
+        #info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="info">
+        <p>Игрок 1 (синий): W (вверх), S (вниз), D (стрелять)</p>
+        <p>Игрок 2 (красный): ↑ (вверх), ↓ (вниз), → (стрелять)</p>
+        <p>Патроны Игрока 1: <span id="ammo1">5</span></p>
+        <p>Патроны Игрока 2: <span id="ammo2">5</span></p>
+    </div>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let player1 = { x: 100, y: 300, width: 30, height: 30, color: 'blue', bullets: [], ammo: 5 };
+        let player2 = { x: 700, y: 300, width: 30, height: 30, color: 'red', bullets: [], ammo: 5 };
+        let shooting1 = false;
+        let shooting2 = false;
+
+        function drawPlayer(player) {
+            ctx.fillStyle = player.color;
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+        }
+
+        function drawBullets(bullets) {
+            bullets.forEach(bullet => {
+                ctx.fillStyle = 'yellow';
+                ctx.fillRect(bullet.x, bullet.y, 5, 5);
+            });
+        }
+
+        function updateBullets(bullets) {
+            bullets.forEach(bullet => {
+                bullet.x += bullet.speed;
+            });
+        }
+
+        function checkCollision(bullet, player) {
+            return bullet.x < player.x + player.width &&
+                   bullet.x + 5 > player.x &&
+                   bullet.y < player.y + player.height &&
+                   bullet.y + 5 > player.y;
+        }
+
+        function resetGame() {
+            player1 = { x: 100, y: 300, width: 30, height: 30, color: 'blue', bullets: [], ammo: 5 };
+            player2 = { x: 700, y: 300, width: 30, height: 30, color: 'red', bullets: [], ammo: 5 };
+            document.getElementById('ammo1').innerText = player1.ammo;
+            document.getElementById('ammo2').innerText = player2.ammo;
+        }
+
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            drawPlayer(player1);
+            drawPlayer(player2);
+            drawBullets(player1.bullets);
+            drawBullets(player2.bullets);
+            
+            updateBullets(player1.bullets);
+            updateBullets(player2.bullets);
+            
+            player1.bullets = player1.bullets.filter(bullet => bullet.x < canvas.width);
+            player2.bullets = player2.bullets.filter(bullet => bullet.x > 0);
+            
+            player1.bullets.forEach(bullet => {
+                if (checkCollision(bullet, player2)) {
+                    alert('Игрок 1 выиграл!');
+                    resetGame();
+                }
+            });
+            
+            player2.bullets.forEach(bullet => {
+                if (checkCollision(bullet, player1)) {
+                    alert('Игрок 2 выиграл!');
+                    resetGame();
+                }
+            });
+            
+            requestAnimationFrame(gameLoop);
+        }
+
+        document.addEventListener('keydown', (event) => {
+            switch (event.key) {
+                case 'w':
+                    player1.y = Math.max(0, player1.y - 5);
+                    break
+                case 's':
+                    player1.y = Math.min(canvas.height - player1.height, player1.y + 5);
+                    break;
+                case 'd':
+                    if (player1.ammo > 0) {
+                        player1.bullets.push({ x: player1.x + player1.width, y: player1.y + player1.height / 2, speed: 5 });
+                        player1.ammo--;
+                        document.getElementById('ammo1').innerText = player1.ammo;
+                    }
+                    break;
+                case 'ArrowUp':
+                    player2.y = Math.max(0, player2.y - 5);
+                    break;
+                case 'ArrowDown':
+                    player2.y = Math.min(canvas.height - player2.height, player2.y + 5);
+                    break;
+                case 'ArrowRight':
+                    if (player2.ammo > 0) {
+                        player2.bullets.push({ x: player2.x, y: player2.y + player2.height / 2, speed: -5 });
+                        player2.ammo--;
+                        document.getElementById('ammo2').innerText = player2.ammo;
+                    }
+                    break;
+                case 'Enter':
+                    resetGame();
+                    break;
+            }
+        });
+
+        document.addEventListener('keyup', (event) => {
+            if (event.key === 'd') {
+                shooting1 = false;
+            }
+            if (event.key === 'ArrowRight') {
+                shooting2 = false;
+            }
+        });
+
+        gameLoop();
+    </script>
+</body>
+</html>

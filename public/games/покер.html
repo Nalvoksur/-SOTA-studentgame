@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Пошаговый покер на двоих</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+            background-color: #f0f0f0;
+        }
+        #game {
+            margin-top: 20px;
+        }
+        .player {
+            margin: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            display: inline-block;
+            background-color: white;
+        }
+        .card {
+            display: inline-block;
+            width: 50px;
+            height: 70px;
+            border: 1px solid #000;
+            margin: 5px;
+            line-height: 70px;
+            font-size: 24px;
+            text-align: center;
+            background-color: #fff;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Пошаговый покер на двоих</h1>
+    <div id="game">
+        <div class="player" id="player1">
+            <h2>Игрок 1</h2>
+            <div id="cards1"></div>
+            <p>Ставка: <span id="bet1">0</span></p>
+            <button onclick="makeBet(1)">Сделать ставку</button>
+        </div>
+        <div class="player" id="player2">
+            <h2>Игрок 2</h2>
+            <div id="cards2"></div>
+            <p>Ставка: <span id="bet2">0</span></p>
+            <button onclick="makeBet(2)">Сделать ставку</button>
+        </div>
+    </div>
+    <button onclick="startGame()">Начать игру</button>
+    <h2 id="message"></h2>
+
+    <script>
+        const cardValues = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+        let bets = [0, 0];
+        let currentPlayer = 1;
+
+        function makeBet(player) {
+            const bet = Math.floor(Math.random() * 10) + 1; // Случайная ставка от 1 до 10
+            bets[player - 1] += bet;
+            document.getElementById(`bet${player}`).innerText = bets[player - 1];
+            document.getElementById("message").innerText = `Игрок ${player} сделал ставку ${bet}.`;
+
+            currentPlayer = player === 1 ? 2 : 1; // Переключение игрока
+        }
+
+        function startGame() {
+            const player1Cards = drawCards();
+            const player2Cards = drawCards();
+            displayCards(player1Cards, 'cards1');
+            displayCards(player2Cards, 'cards2');
+
+            const player1Score = calculateScore(player1Cards);
+            const player2Score = calculateScore(player2Cards);
+
+            document.getElementById('message').innerText += ` Игрок 1: ${player1Score}, Игрок 2: ${player2Score}.`;
+
+            determineWinner(player1Score, player2Score);
+        }
+
+        function drawCards() {
+            const card1 = cardValues[Math.floor(Math.random() * cardValues.length)];
+            const card2 = cardValues[Math.floor(Math.random() * cardValues.length)];
+            return [card1, card2];
+        }
+
+        function displayCards(cards, elementId) {
+            const cardContainer = document.getElementById(elementId);
+            cardContainer.innerHTML = '';
+            cards.forEach(card => {
+                const cardDiv = document.createElement('div');
+                cardDiv.className = 'card';
+                cardDiv.innerText = card;
+                cardContainer.appendChild(cardDiv);
+            });
+        }
+
+        function calculateScore(cards) {
+            return cards.reduce((total, card) => {
+                if (card === 'A') return total + 14;
+                if (card === 'K') return total + 13;
+                if (card === 'Q') return total + 12;
+                if (card === 'J') return total + 11;
+                return total + parseInt(card);
+            }, 0);
+        }
+
+</script>

@@ -1,0 +1,31 @@
+body {
+    font-family: Verdana;
+    background: linear-gradient(90deg, #f598a8, #f6edb2);
+    text-align: center;
+    padding: 50px;
+}
+
+h1 {
+    color: #333;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 столбца */
+    grid-template-rows: repeat(3, 1fr);    /* 3 строки */
+    gap: 10px;                             /* Промежуток между элементами */
+    width: 300px;                          /* Ширина контейнера */
+    height: 300px;                         /* Высота контейнера */
+}
+
+.grid-item {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #4CAF50; /* Цвет фона */
+    color: white;               /* Цвет текста */
+    font-size: 24px;           /* Размер шрифта */
+    border: 1px solid #333;    /* Граница */
+}

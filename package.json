@@ -1,0 +1,28 @@
+{
+  "name": "studentgame",
+  "version": "1.0.0",
+  "description": "Простое приложение на Node.js с использованием Electron",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-packager . MyApp --platform=win32 --arch=x64"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "electron": "^33.2.1",
+    "electron-packager": "^17.1.2"
+  },
+  "bin": {
+    "StudentGame": "index.js"
+  },
+  "pkg": {
+    "targets": [
+      "node14-win-x64"
+    ]
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

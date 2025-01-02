@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Хоррор Игра</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        button {
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1.2em;
+            cursor: pointer;
+            margin: 10px;
+        }
+        button:hover {
+            background-color: darkred;
+        }
+        #story {
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Хоррор Игра</h1>
+    <div id="story">Вы просыпаетесь в темной комнате. Что вы будете делать?</div>
+    <button onclick="choose('осмотреться')">Осмотреться</button>
+    <button onclick="choose('выйти')">Выйти из комнаты</button>
+    <div id="result"></div>
+
+    <script>
+        function choose(action) {
+            const story = document.getElementById('story');
+            const result = document.getElementById('result');
+
+            if (action === 'осмотреться') {
+                story.innerHTML = "Вы осмотрелись и заметили, что в углу комнаты что-то шевелится...";
+                result.innerHTML = '<button onclick="choose(\'подойти\')">Подойти</button><button onclick="choose(\'игнорировать\')">Игнорировать</button>';
+            } else if (action === 'выйти') {
+                story.innerHTML = "Вы открываете дверь и выходите в коридор. Вдруг слышите шаги...";
+                result.innerHTML = '<button onclick="choose(\'спрятаться\')">Спрятаться</button><button onclick="choose(\'идти дальше\')">Идти дальше</button>';
+            } else if (action === 'подойти') {
+                story.innerHTML = "Вы подошли ближе и увидели призрака! Он смотрит на вас...";
+                result.innerHTML = '<button onclick="endGame(\'попался\')">Попался!</button><button onclick="choose(\'попытаться поговорить\')">Попытаться поговорить</button>';
+            } else if (action === 'игнорировать') {
+                story.innerHTML = "Вы решили игнорировать это и вернуться к двери. Но дверь закрыта!";
+                result.innerHTML = '<button onclick="endGame(\'заперты\')">Вы заперты!</button>';
+            } else if (action === 'спрятаться') {
+                story.innerHTML = "Вы спрятались за шкафом. Шаги приближаются...";
+                result.innerHTML = '<button onclick="endGame(\'спасены\')">Вы спасены!</button>';
+            } else if (action === 'идти дальше') {
+                story.innerHTML = "Вы идете дальше и находите выход. Вы спасены!";
+                result.innerHTML = '<button onclick="restart()">Начать заново</button>';
+            } else if (action === 'попытаться поговорить') {
+                story.innerHTML = "Вы попытались поговорить с призраком. Он отвечает: 'Помоги мне...'";
+                result.innerHTML = '<button onclick="choose(\'помочь\')">Помочь</button><button onclick="choose(\'убежать\')">Убежать</button>';
+            } else if (action === 'помочь') {
+                story.innerHTML = "Вы решили помочь призраку. Он благодарит вас и исчезает. Вы спасены!";
+                result.innerHTML = '<button onclick="restart()">Начать заново</button>';
+            } else if (action === 'убежать') {
+                story.innerHTML = "Вы в панике убегаете, но призрак преследует вас! Игра окончена.";
+                result.innerHTML = '<button onclick="restart()">Начать заново</button>';
+            }
+        }
+
+        function endGame(outcome) {
+            const story = document.getElementById('story');
+            const result = document.getElementById('result');
+
+            if (outcome === 'попался') {
+                story.innerHTML = "Призрак схватил вас! Игра окончена.";
+            } else if (outcome === 'заперты') {
+                story.innerHTML = "Вы ост
+                story.innerHTML = "Вы остались запертыми навсегда! Игра окончена.";
+            } else if (outcome === 'спасены') {
+                story.innerHTML = "Вы остались в безопасности! Игра окончена.";
+            }
+            result.innerHTML = '<button onclick="restart()">Начать заново</button>';
+        }
+
+        function restart() {
+            const story = document.getElementById('story');
+            const result = document.getElementById('result');
+            story.innerHTML = "Вы просыпаетесь в темной комнате. Что вы будете делать?";
+            result.innerHTML = '<button onclick="choose(\'осмотреться\')">Осмотреться</button><button onclick="choose(\'выйти\')">Выйти из комнаты</button>';
+        }
+    </script>
+</body>
+</html>

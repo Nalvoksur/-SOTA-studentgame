@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Game</title>
+    <style>
+        body {
+            font-family: Verdana;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: linear-gradient(90deg, #aea4e3, #d3ffe8);
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        .board {
+            display: grid;
+            grid-gap: 10px;
+            margin-bottom: 20px;
+        }
+        .card {
+            background-color: #4CAF50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+            user-select: none;
+        }
+        .card.flipped {
+            background-color: #fff;
+            color: #4CAF50;
+        }
+        .player-info {
+            margin-bottom: 20px;
+        }
+        .scoreboard {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Memory Game</h1>
+<div class="player-info" id="playerInfo">Игрок 1, ваш ход!</div>
+<div class="board" id="board"></div>
+
+<label for="numPlayers">Выберите количество игроков:</label>
+<select id="numPlayers">
+    <option value="1">1 игрок</option>
+    <option value="2">2 игрока</option>
+    <option value="3">3 игрока</option>
+    <option value="4">4 игрока</option>
+</select>
+
+<label for="boardSize">Выберите размер поля:</label>
+<select id="boardSize">
+    <option value="4">4x4</option>
+    <option value="8">8x8</option>
+</select>
+
+<button id="startGame">Начать игру</button>
+<a href="../index.html"><button id="startGame" style="margin-top: 2px;">Выйти</button></a>
+<div class="scoreboard" id="scoreboard"></div>
+
+<script>
+    let board = document.getElementById('board');
+    let playerInfo = document.getElementById('playerInfo');
+    let scoreboard = document.getElementById('scoreboard');
+    let firstCard = null;
+    let secondCard = null;
+    let lockBoard = false;
+    let currentPlayer = 1;
+    let numPlayers = 1;
+    let scores = [];
+    let cardValues = [];
+
+    document.getElementById('startGame').addEventListener('click', startGame);
+    
+    function generateCardValues(size) {
+        const totalCards = size * size / 2; // Пары карточек
+        cardValues = [];
+        for (let i = 0; i < totalCards; i++) {
+            const value = String.fromCharCode(65 + i); // Генерация букв A, B, C, ...
+            cardValues.push(value, value); // Добавляем пару
+        }
+        return shuffle(cardValues);
+    }
+
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function createBoard(size) {
+    board.innerHTML = '';
+    const cardSize = 550 / size;
+    board.style.gridTemplateColumns = `repeat(${size}, ${cardSize}px)`;
+    const shuffledCards = generateCardValues(size);
+    shuffledCards.forEach(value => {
+        const card = document.createElement('div');
+        card.classList.add('card');
+        card.dataset.value = value;
+        card.style.width = `${cardSize}px`;
+        card.style.height = `${cardSize}px`;
+        card.addEventListener('click', flipCard);
+        board.appendChild(card);
+    });
+}
+
+    function startGame() {
+        numPlayers = parseInt(document.getElementById('numPlayers').value);
+        const boardSize = parseInt(document.getElementById('boardSize').value);
+        currentPlayer = 1;
+        scores = Array(numPlayers).fill(0);
+        playerInfo.textContent = `Игрок ${currentPlayer}, ваш ход!`;
+        updateScoreboard();
+        createBoard(boardSize);
+    }
+
+    function flipCard() {
+        if (lockBoard || this === firstCard) return;
+        this.classList.add('flipped');
+        this.textContent = this.dataset.value;
+
+        if (!firstCard) {
+            firstCard = this;
+        } else {
+            secondCard = this;
+            lockBoard = true;
+            checkForMatch();
+        }
+    }
+
+    function checkForMatch() {
+        if (firstCard.dataset.value === secondCard.dataset.value) {
+            scores[currentPlayer - 1]++;
+            updateScoreboard();
+            resetBoard();
+        } else {
+            setTimeout(() => {
+                firstCard.classList.remove('flipped');
+                firstCard.textContent = '';
+                secondCard.classList.remove('flipped');
+                secondCard.textContent = '';
+                resetBoard();
+            }, 1000);
+        }
+    }
+
+    function resetBoard() {
+        if (firstCard && secondCard) {
+            if (numPlayers > 1) {
+                currentPlayer = currentPlayer === numPlayers ? 1 : currentPlayer + 1;
+                playerInfo.textContent = `Игрок ${currentPlayer}, ваш ход!`;
+            }
+        }
+        [firstCard, secondCard, lockBoard] = [null, null, false];
+    }
+
+    function updateScoreboard() {
+        scoreboard.innerHTML = '<h2>Счет:</h2>';
+        scores.forEach((score, index) => {
+            scoreboard.innerHTML += `Игрок ${index + 1}: ${score} пар(ы)<br>`;
+        });
+    }
+function checkForMatch() {
+    if (firstCard.dataset.value === secondCard.dataset.value) {
+        scores[currentPlayer - 1]++;
+        updateScoreboard();
+        resetBoard(true); // Передаем true, чтобы не переключать игрока
+    } else {
+        setTimeout(() => {
+            firstCard.classList.remove('flipped');
+            firstCard.textContent = '';
+            secondCard.classList.remove('flipped');
+            secondCard.textContent = '';
+            resetBoard();
+        }, 1000);
+    }
+}
+
+function resetBoard(keepCurrentPlayer = false) {
+    if (firstCard && secondCard) {
+        if (!keepCurrentPlayer && numPlayers > 1) {
+            currentPlayer = currentPlayer === numPlayers ? 1 : currentPlayer + 1;
+            playerInfo.textContent = `Игрок ${currentPlayer}, ваш ход!`;
+        }
+    }
+    [firstCard, secondCard, lockBoard] = [null, null, false];
+}
+
+    createBoard(4); // Инициализация поля 4x4 по умолчанию
+</script>
+
+</body>
+</html>

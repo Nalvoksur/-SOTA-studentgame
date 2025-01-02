@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Поймай падающий объект</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
+
+        #gameArea {
+            position: relative;
+            width: 400px;
+            height: 600px;
+            border: 2px solid #000;
+            overflow: hidden;
+        }
+
+        .player {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background-color: blue;
+        }
+
+        #player1 {
+            background-color: red;
+            bottom: 10px;
+            left: 50px;
+        }
+
+        #player2 {
+            background-color: green;
+            bottom: 10px;
+            right: 50px;
+        }
+
+        #fallingObject {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background-color: yellow;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        #scoreBoard {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameArea">
+        <div id="player1" class="player"></div>
+        <div id="player2" class="player"></div>
+        <div id="fallingObject"></div>
+    </div>
+    <div id="scoreBoard">
+        <div>Игрок 1: <span id="score1">0</span></div>
+        <div>Игрок 2: <span id="score2">0</span></div>
+    </div>
+    <script>
+        let score1 = 0;
+        let score2 = 0;
+        const fallingObject = document.getElementById('fallingObject');
+        const player1 = document.getElementById('player1');
+        const player2 = document.getElementById('player2');
+        const scoreBoard1 = document.getElementById('score1');
+        const scoreBoard2 = document.getElementById('score2');
+
+        function startGame() {
+            let fallingSpeed = 2;
+            let fallingInterval = setInterval(() => {
+                let fallingObjectTop = parseInt(window.getComputedStyle(fallingObject).getPropertyValue('top'));
+                if (fallingObjectTop < 600) {
+                    fallingObject.style.top = (fallingObjectTop + fallingSpeed) + 'px';
+                } else {
+                    resetFallingObject();
+                }
+                checkCollision();
+            }, 20);
+
+            function resetFallingObject() {
+                fallingObject.style.top = '0px';
+                fallingObject.style.left = Math.random() * 370 + 'px'; // Random horizontal position
+            }
+
+            function checkCollision() {
+                const fallingRect = fallingObject.getBoundingClientRect();
+                const player1Rect = player1.getBoundingClientRect();
+                const player2Rect = player2.getBoundingClientRect();
+
+                if (isColliding(fallingRect, player1Rect)) {
+                    score1++;
+                    scoreBoard1.textContent = score1;
+                    resetFallingObject();
+                } else if (isColliding(fallingRect, player2Rect)) {
+                    score2++;
+                    scoreBoard2.textContent = score2;
+                    resetFallingObject();
+                }
+            }
+
+            function isColliding(rect1, rect2) {
+                return !(rect1.right < rect2.left || 
+                         rect1.left > rect2.right || 
+                         rect1.bottom < rect2.top || 
+                         rect1.top > rect2.bottom);
+            }
+        }
+
+        document.addEventListener('keydown', (event) => {
+            const player1Left = parseInt(window.getComputedStyle(player1).getPropertyValue('left'));
+            const player2Left = parseInt(window.getComputedStyle(player2).getPropertyValue('left'));
+
+            if (event.key === 'a' && player1Left > 0) {
+                player1.style.left = (player1Left - 10) + 'px';
+            } else if (event.key === 'd' && player1Left < 350) {
+                player1.style.left = (player1Left + 10) + 'px';
+            } else if (event.key === 'ArrowLeft' && player2Left > 0) {
+                player2.style.left = (player2Left

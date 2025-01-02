@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Сапер</title>
+    <style>
+        body {
+            font-family: Verdana;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+           background: linear-gradient(90deg, #cfecd0, #a0cea7, #9ec0db);
+        }
+        #game {
+            display: grid;
+            gap: 2px;
+            margin-bottom: 20px;
+        }
+        .cell {
+            background-color: #ddd;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-size: 20px;
+        }
+        .mine {
+            background-color: red;
+        }
+        .revealed {
+            background-color: #fff;
+        }
+        .flag {
+            background-color: yellow;
+        }
+        button, select {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        #message {
+            margin-top: 20px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <select id="sizeSelect">
+        <option value="8">8x8</option>
+        <option value="16">16x16</option>
+        <option value="24">24x24</option>
+        <option value="32">32x32</option>
+    </select>
+    <button id="startButton">Начать игру</button>
+    <a href="../index.html"><button id="startButton">Выйти</button></a>
+    <div id="game"></div>
+    <div id="message"></div>
+    <script>
+        let rows, cols, minesCount;
+        const gameBoard = document.getElementById('game');
+        const startButton = document.getElementById('startButton');
+        const messageDiv = document.getElementById('message');
+        const sizeSelect = document.getElementById('sizeSelect');
+        let board, revealed, flagged, gameOver, timer, startTime;
+
+        function initializeGame() {
+            rows = parseInt(sizeSelect.value);
+            cols = rows; // Поле квадратное
+            minesCount = Math.floor(rows * cols / 5); // Примерное количество мин
+            board = Array.from({ length: rows }, () => Array(cols).fill(0));
+            revealed = Array.from({ length: rows }, () => Array(cols).fill(false));
+            flagged = Array.from({ length: rows }, () => Array(cols).fill(false));
+            gameOver = false;
+            messageDiv.textContent = '';
+            gameBoard.innerHTML = '';
+            gameBoard.style.gridTemplateColumns = `repeat(${cols}, 30px)`;
+            gameBoard.style.gridTemplateRows = `repeat(${rows}, 30px)`;
+            placeMines();
+            createBoard();
+            startTime = Date.now();
+            timer = setInterval(updateTimer, 1000);
+        }
+
+        function placeMines() {
+            let placedMines = 0;
+            while (placedMines < minesCount) {
+                const row = Math.floor(Math.random() * rows);
+                const col = Math.floor(Math.random() * cols);
+                if (board[row][col] !== 'M') {
+                    board[row][col] = 'M';
+                    placedMines++;
+                    updateNeighbors(row, col);
+                }
+            }
+        }
+
+        function updateNeighbors(row, col) {
+            for (let r = row - 1; r <= row + 1; r++) {
+                for (let c = col - 1; c <= col + 1; c++) {
+                    if (r >= 0 && r < rows && c >= 0 && c < cols && board[r][c] !== 'M') {
+                        board[r][c]++;
+                    }
+                }
+            }
+        }
+
+        function createBoard() {
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    cell.dataset.row = r;
+                    cell.dataset.col = c;
+                    cell.addEventListener('click', () => revealCell(r, c));
+                    cell.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        toggleFlag(r,                    c);
+                    });
+                    gameBoard.appendChild(cell);
+                }
+            }
+        }
+
+        function revealCell(row, col) {
+            if (revealed[row][col] || flagged[row][col] || gameOver) return;
+            revealed[row][col] = true;
+            const cell = gameBoard.children[row * cols + col];
+            cell.classList.add('revealed');
+
+            if (board[row][col] === 'M') {
+                cell.classList.add('mine');
+                gameOver = true;
+                clearInterval(timer);
+                alert('Игра окончена! Вы попали на мину.');
+                revealAllMines();
+                return;
+            }
+
+            cell.textContent = board[row][col] || '';
+            if (board[row][col] === 0) {
+                for (let r = row - 1; r <= row + 1; r++) {
+                    for (let c = col - 1; c <= col + 1; c++) {
+                        if (r >= 0 && r < rows && c >= 0 && c < cols) {
+                            revealCell(r, c);
+                        }
+                    }
+                }
+            }
+
+            checkVictory();
+        }
+
+        function toggleFlag(row, col) {
+            if (revealed[row][col] || gameOver) return;
+            flagged[row][col] = !flagged[row][col];
+            const cell = gameBoard.children[row * cols + col];
+            cell.classList.toggle('flag');
+            cell.textContent = flagged[row][col] ? '🚩' : '';
+        }
+
+        function revealAllMines() {
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    if (board[r][c] === 'M') {
+                        const cell = gameBoard.children[r * cols + c];
+                        cell.classList.add('mine');
+                    }
+                }
+            }
+        }
+
+        function checkVictory() {
+            let allRevealed = true;
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    if (board[r][c] !== 'M' && !revealed[r][c]) {
+                        allRevealed = false;
+                    }
+                }
+            }
+            if (allRevealed) {
+                gameOver = true;
+                clearInterval(timer);
+                const timeTaken = Math.floor((Date.now() - startTime) / 1000);
+                messageDiv.textContent = `Поздравляем! Вы выиграли! Время: ${timeTaken} секунд.`;
+            }
+        }
+
+        function updateTimer() {
+            const timeTaken = Math.floor((Date.now() - startTime) / 1000);
+            messageDiv.textContent = `Время: ${timeTaken} секунд`;
+        }
+
+        startButton.addEventListener('click', initializeGame);
+
+        // Инициализация игры при загрузке страницы
+        initializeGame();
+    </script>
+</body>
+</html>
+

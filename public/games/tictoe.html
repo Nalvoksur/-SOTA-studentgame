@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Крестики-нолики</title>
+    <style>
+        body {
+            font-family: Verdana;
+            text-align: center;
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: linear-gradient(90deg, #ee5c87, #f1a4b5, #d587b3);
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-gap: 5px;
+            margin: 0 auto;
+        }
+        .cell {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            border: 1px solid #000;
+            cursor: pointer;
+            background-color: #fff;
+        }
+        #status {
+            margin-top: 20px;
+            font-size: 20px;
+        }
+        .block{
+            padding: 20px;
+            width: 450px;
+            display:grid;
+            justify-content: center;
+            backdrop-filter: blur(100000px);
+            border: 2px solid white; /* Граница для видимости */
+            border-radius:5% ;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="block">
+    <h1>Крестики-нолики</h1>
+    <div class="board" id="board"></div>
+    <div id="status"></div>
+        <div style="display: block;">
+            <button onclick="resetGame()">Начать заново</button>
+        </div>    
+        <div style="display: block;">
+            <a href="../index.html"><button onclick="resetGame()">Выйти</button></a>
+        </div>
+    </div>
+    <script>
+        const board = document.getElementById('board');
+        const statusDiv = document.getElementById('status');
+        let currentPlayer = 'X';
+        let gameActive = true;
+        const gameState = ['', '', '', '', '', '', '', '', ''];
+
+        const winningConditions = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [2, 4, 6]
+        ];
+
+        function createBoard() {
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.setAttribute('data-cell-index', i);
+                cell.addEventListener('click', handleCellClick);
+                board.appendChild(cell);
+            }
+        }
+
+        function handleCellClick(event) {
+            const clickedCell = event.target;
+            const clickedCellIndex = clickedCell.getAttribute('data-cell-index');
+
+            if (gameState[clickedCellIndex] !== '' || !gameActive) {
+                return;
+            }
+
+            gameState[clickedCellIndex] = currentPlayer;
+            clickedCell.textContent = currentPlayer;
+
+            checkResult();
+        }
+
+        function checkResult() {
+            let roundWon = false;
+
+            for (let i = 0; i < winningConditions.length; i++) {
+                const [a, b, c] = winningConditions[i];
+                if (gameState[a] === '' || gameState[b] === '' || gameState[c] === '') {
+                    continue;
+                }
+                if (gameState[a] === gameState[b] && gameState[a] === gameState[c]) {
+                    roundWon = true;
+                    break;
+                }
+            }
+
+            if (roundWon) {
+                statusDiv.textContent = `Игрок ${currentPlayer} выиграл!`;
+                gameActive = false;
+                return;
+            }
+
+            if (!gameState.includes('')) {
+                statusDiv.textContent = 'Ничья!';
+                gameActive = false;
+                return;
+            }
+
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            statusDiv.textContent = `Сейчас ход игрока ${currentPlayer}`;
+        }
+
+        function resetGame() {
+            gameActive = true;
+            currentPlayer = 'X';
+            gameState.fill('');
+            statusDiv.textContent = `Сейчас ход игрока ${currentPlayer}`;
+            document.querySelectorAll('.cell').forEach(cell => {
+                cell.textContent = '';
+            });
+        }
+
+        createBoard();
+        resetGame();
+    </script>
+</body>
+</html>
